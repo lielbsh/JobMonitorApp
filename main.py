@@ -1,4 +1,4 @@
-from gmail_reader import authenticate_gmail, get_messages_gmail, process_gmail_messages
+from services.gmail_reader import authenticate_gmail, get_messages_gmail, process_gmail_messages
 
 def main():
     gmail = authenticate_gmail()
