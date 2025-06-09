@@ -11,6 +11,8 @@ from googleapiclient.discovery import build
 
 from datetime import datetime
 
+from services.email_analysis import analyze_email, print_analysis
+
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 def authenticate_gmail():
@@ -110,10 +112,11 @@ def process_gmail_messages(messages, service):
     for idx, msg in enumerate(messages, start=1):
         msg_data = service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
         msg_info = extract_message_info(msg_data)
-
-        print("")
-        print(f"\n[{idx}] 📧 EMAIL: {msg_info['subject']} | from {msg_info['from']}")
-        print(msg_info['body'])
+        analysis = analyze_email(msg_info)
+        if analysis:
+            print_analysis(idx, analysis, msg_info)
+        else:
+            print(f"\n[{idx}] 📧 EMAIL: {msg_info['subject']} | from {msg_info['from']}")
 
 
         
