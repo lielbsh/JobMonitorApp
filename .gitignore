@@ -17,4 +17,4 @@ venv/
 .DS_Store
 
 jobs.db
-
+test.db
