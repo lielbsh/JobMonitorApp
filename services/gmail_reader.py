@@ -11,6 +11,7 @@ from googleapiclient.discovery import build
 
 from datetime import datetime
 
+from db.crud import insert_email, insert_job
 from services.email_analysis import analyze_email, print_analysis
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
@@ -41,13 +42,6 @@ query = (
     '-subject:(newsletter OR promotion OR "get started" OR reset OR verify) '
     'newer_than:1m'
 )
-
-# query = (
-#     'subject:("application was" OR "application for" OR applied OR applying OR opportunity OR interest OR         interview OR position OR "thanks for your interest" OR joining) '
-#     '-subject:(newsletter OR promotion OR "get started") '
-#     'newer_than:1m'
-# )
-
 
 def extract_message_info(msg_data):
     """
@@ -110,10 +104,21 @@ def get_messages_gmail(service):
 
 def process_gmail_messages(messages, service):
     for idx, msg in enumerate(messages, start=1):
+        gmail_id, gmail_thread_id = msg['id'], msg['threadId']
         msg_data = service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
         msg_info = extract_message_info(msg_data)
         analysis = analyze_email(msg_info)
         print_analysis(idx, analysis, msg_info)
+
+        # Saves to db  
+        job_id = insert_job(analysis)
+        
+        insert_email(
+            gmail_id=gmail_id,
+            thread_id=gmail_thread_id,
+            msg_info=msg_info,
+            job_id=job_id
+        )
         
 
 

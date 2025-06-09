@@ -19,7 +19,6 @@ def call_openaiapi(prompt: str) -> json:
         temperature=0.3
     )
         result = response.choices[0].message.content
-        print("Result from OpenAI:", result)
         try:
             return json.loads(result)
         except json.JSONDecodeError:
