@@ -113,10 +113,8 @@ def process_gmail_messages(messages, service):
         msg_data = service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
         msg_info = extract_message_info(msg_data)
         analysis = analyze_email(msg_info)
-        if analysis:
-            print_analysis(idx, analysis, msg_info)
-        else:
-            print(f"\n[{idx}] 📧 EMAIL: {msg_info['subject']} | from {msg_info['from']}")
+        print_analysis(idx, analysis, msg_info)
+        
 
 
         

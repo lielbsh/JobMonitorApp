@@ -1,5 +1,7 @@
 import re
 
+from services.openai_client import call_openaiapi, count_tokens, create_prompt
+
 def analyze_email(msg_info):
     is_linkedin = "linkedin.com" in msg_info['from'].lower()
     link = None
@@ -18,7 +20,26 @@ def analyze_email(msg_info):
             "last_update": last_update
         }
 
-    return
+    prompt = create_prompt(msg_info)
+    result = call_openaiapi(prompt) 
+    print("Number of tokens: ",count_tokens(prompt))
+    
+    source = "openai_api"
+    status = result["status"]
+    company = result["company"]
+    role = result["role"]
+    link = result["link"]
+    location = None
+
+    return {
+        "source": source,
+        "status": status,
+        "company": company,
+        "role": role,
+        "link": link,
+        "location": location,
+        "last_update": last_update
+    }
 
 def print_analysis(idx, analysis, msg_info):
     print(f"\n[{idx}] 📧 EMAIL: {msg_info['subject']} | from {msg_info['from']}")
