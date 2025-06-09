@@ -1,0 +1,20 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+token.pickle
+credentials.json
+
+# Virtual environment
+venv/
+
+# dotenv environment variables
+.env
+
+# VS Code settings 
+.vscode/
+
+# OS files
+.DS_Store
+
+jobs.db
+
