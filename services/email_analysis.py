@@ -1,3 +1,5 @@
+import re
+
 def analyze_email(msg_info):
     is_linkedin = "linkedin.com" in msg_info['from'].lower()
     link = None
