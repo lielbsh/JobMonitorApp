@@ -1,47 +1,35 @@
 from sqlalchemy import func
 from db.database import SessionLocal
 from models import Job, Email
+from datetime import timedelta, datetime
+from schemas import JobData, MessageData
 
 
-def insert_job(session, job_data: dict[str, any]) -> int:
-    new_job = Job(
-        company=job_data.get("company"),
-        role=job_data.get("role"),
-        status=job_data.get("status"),
-        source=job_data.get("source"),
-        last_update=job_data.get("last_update"),
-        location=job_data.get("location"),
-        link=job_data.get("link"),
-    )
+def insert_job(session, job_data: JobData) -> int:
+    new_job = job_data.to_job_model()
     session.add(new_job)
     session.commit()
     session.refresh(new_job)
     return new_job.id
 
 
-def insert_email(gmail_id: str, thread_id: str, msg_info: dict, job_id: int):
+def insert_email(message_data: MessageData, job_id: int) -> bool:
     with SessionLocal() as db:
-        existing = db.query(Email).filter_by(gmail_id=gmail_id).first()
+        existing = db.query(Email).filter_by(gmail_id=message_data.gmail_id).first()
         if existing:
-            return
+            return False
 
-        email = Email(
-            gmail_id=gmail_id,
-            thread_id=thread_id,
-            job_id=job_id,
-            subject=msg_info.get("subject"),
-            body=msg_info.get("body"),
-            from_email=msg_info.get("from"),
-            date=msg_info.get("date"),
-        )
+        email = message_data.to_email_model(job_id)
         db.add(email)
         db.commit()
+        return True
 
 
-def update_or_create_job(job_data: dict[str, any]):
+def update_or_create_job(job_data: JobData, email_data: MessageData):
     with SessionLocal() as db:
-        company = job_data.get("company" or "").lower()
-        role = job_data.get("role" or "").lower()
+        company = job_data.company.lower() if job_data.company else None
+        role = job_data.role.lower() if job_data.role else None
+
 
         if company and role:
             job = (
@@ -66,10 +54,13 @@ def update_or_create_job(job_data: dict[str, any]):
             job = None
 
         if job:
-            if job.status != job_data.get("status"):
-                job.status = job_data.get("status")
-                job.last_update = job_data.get("last_update")
+            if job.status != job_data.status:
+                job.status = job_data.status
+                job.last_update = job_data.last_update
                 db.commit()
             return job.id
-
+        
         return insert_job(db, job_data)
+        
+
+

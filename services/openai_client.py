@@ -3,6 +3,7 @@ import json
 import openai
 import tiktoken
 from dotenv import load_dotenv
+from schemas import MessageData
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
@@ -48,14 +49,14 @@ def count_tokens(text, model_name="gpt-4o-mini"):
     return len(tokens)
 
 
-def create_prompt(email_info):
+def create_prompt(email_data: MessageData):
     prompt = f"""
     You are an assistant that extracts job application information from email messages.
 
     Given the following email:
-    From: {email_info['from']}
-    Subject: {email_info['subject']}
-    Body: {email_info['body']}
+    From: {email_data.from_email}
+    Subject: {email_data.subject}
+    Body: {email_data.body}
 
     Classify the email and return the following fields:
     - status: (string) One of ['Submitted Application', 'Rejected', 'Interview Process', 'Home Assignment', 'Accepted', 'Not Relevant'] 

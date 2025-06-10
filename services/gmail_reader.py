@@ -4,6 +4,7 @@ import pickle
 import base64
 import html
 from bs4 import BeautifulSoup
+from schemas import MessageData
 
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -43,12 +44,12 @@ query = (
     'newer_than:1m'
 )
 
-def extract_message_info(msg_data):
+def extract_message_data(gmail_msg, gmail_id, gmail_thread_id) -> MessageData:
     """
     Extracts structured message information from Gmail API response.
     Returns a dict with from, subject, and body/snippet text.
     """
-    payload = msg_data.get('payload', {})
+    payload = gmail_msg.get('payload', {})
 
     def decode_body(data):
         return html.unescape(base64.urlsafe_b64decode(data.encode('UTF-8')).decode('UTF-8', errors='replace'))
@@ -73,7 +74,7 @@ def extract_message_info(msg_data):
     
     # Fallback: use snippet if body is empty
     if not body_html:
-        snippet = msg_data.get('snippet', '') 
+        snippet = gmail_msg.get('snippet', '') 
         print("** Body is empty – using snippet instead **")
         body_text = snippet.strip()[:500] if snippet else ""
     else:
@@ -86,14 +87,16 @@ def extract_message_info(msg_data):
     headers = {h['name']: h['value'] for h in payload.get('headers', [])}
     subject = headers.get('Subject', '')
     sender = headers.get('From', '')
-    date = datetime.fromtimestamp(int(msg_data.get('internalDate', 0)) // 1000)
+    date = datetime.fromtimestamp(int(gmail_msg.get('internalDate', 0)) // 1000)
 
-    return {
-        "from": sender,
-        "subject": subject,
-        "body": body_text,
-        "date": date
-    }          
+    return MessageData(
+        from_email=sender,
+        subject=subject,
+        date=date,
+        body=body_text,
+        gmail_id=gmail_id,
+        thread_id=gmail_thread_id
+    )          
 
 def get_messages_gmail(service):
     number_of_messages = 6
@@ -105,19 +108,17 @@ def get_messages_gmail(service):
 
 def process_gmail_messages(messages, service):
     for idx, msg in enumerate(messages, start=1):
-        gmail_id, gmail_thread_id = msg['id'], msg['threadId']
-        msg_data = service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
-        msg_info = extract_message_info(msg_data)
-        analysis = analyze_email(msg_info)
-        print_analysis(idx, analysis, msg_info)
+        gmail_msg_data = service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
+
+        message_data = extract_message_data(gmail_msg_data, msg['id'], msg['threadId'])
+        analysis = analyze_email(message_data)
+        print_analysis(idx, analysis, message_data)
 
         # Saves to db  
-        job_id = update_or_create_job(analysis)
+        job_id = update_or_create_job(analysis, message_data)
         
         insert_email(
-            gmail_id=gmail_id,
-            thread_id=gmail_thread_id,
-            msg_info=msg_info,
+            message_data=message_data,
             job_id=job_id
         )
         
