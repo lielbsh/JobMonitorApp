@@ -4,14 +4,12 @@ from models import Job, Email
 from datetime import timedelta, datetime
 from schemas import JobData, MessageData
 
-
-def insert_job(session, job_data: JobData) -> int:
-    new_job = job_data.to_job_model()
-    session.add(new_job)
-    session.commit()
-    session.refresh(new_job)
-    return new_job.id
-
+def email_exist(gmail_id: str) -> (Email | None):
+    with SessionLocal() as db:
+        existing = db.query(Email).filter_by(gmail_id=gmail_id).first()
+        if existing: print(f"[{existing.id}] Email exist")
+        return existing
+    
 
 def insert_email(message_data: MessageData, job_id: int) -> bool:
     with SessionLocal() as db:
@@ -22,17 +20,38 @@ def insert_email(message_data: MessageData, job_id: int) -> bool:
         email = message_data.to_email_model(job_id)
         db.add(email)
         db.commit()
-        return True
+        return True  
+
+
+def insert_job(session, job_data: JobData) -> int:
+    new_job = job_data.to_job_model()
+    session.add(new_job)
+    session.commit()
+    session.refresh(new_job)
+    print("New job saved to db, job Id =", new_job.id)
+    return new_job.id
+
+
+def update_job(session, job: Job, new_job: Job):
+    job.status = new_job.status
+    job.last_update = new_job.last_update
+    session.commit()
+    return job.id
 
 
 def update_or_create_job(job_data: JobData, email_data: MessageData):
     with SessionLocal() as db:
         company = job_data.company.lower() if job_data.company else None
         role = job_data.role.lower() if job_data.role else None
+        thread_id = email_data.thread_id
+        from_email = email_data.from_email
 
+        if not company:
+            print("Missing Company -> job didn't save to db")
+            return
 
-        if company and role:
-            job = (
+        if role:
+            db_job = (
                 db.query(Job)
                 .filter(
                     func.lower(Job.company) == company,
@@ -40,27 +59,19 @@ def update_or_create_job(job_data: JobData, email_data: MessageData):
                 )
                 .first()
             )
-        elif company:
+        else:
             jobs = (
                 db.query(Job)
                 .filter(func.lower(Job.company) == company)
                 .all()
             )
             if len(jobs) == 1:
-                job = jobs[0]
+                db_job = jobs[0]
             else:
-                job = None
-        else:
-            job = None
-
-        if job:
-            if job.status != job_data.status:
-                job.status = job_data.status
-                job.last_update = job_data.last_update
-                db.commit()
-            return job.id
+                db_job = next((j for j in jobs if j.thread_id == thread_id), None)
+        
+        if db_job:
+            return update_job(db, db_job, job_data)
         
         return insert_job(db, job_data)
-        
-
-
+    

@@ -12,7 +12,7 @@ from googleapiclient.discovery import build
 
 from datetime import datetime
 
-from db.crud import insert_email, update_or_create_job
+from db.crud import email_exist, insert_email, update_or_create_job
 from services.email_analysis import analyze_email, print_analysis
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
@@ -108,9 +108,11 @@ def get_messages_gmail(service):
 
 def process_gmail_messages(messages, service):
     for idx, msg in enumerate(messages, start=1):
-        gmail_msg_data = service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
+        gmail_id, gmail_thread_id = msg['id'], msg['threadId']
+        gmail_msg_data = service.users().messages().get(userId='me', id=gmail_id, format='full').execute()
+        if email_exist(gmail_id): continue
 
-        message_data = extract_message_data(gmail_msg_data, msg['id'], msg['threadId'])
+        message_data = extract_message_data(gmail_msg_data, gmail_id, gmail_thread_id)
         analysis = analyze_email(message_data)
         print_analysis(idx, analysis, message_data)
 
