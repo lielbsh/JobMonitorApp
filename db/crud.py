@@ -33,9 +33,22 @@ def insert_job(session, job_data: JobData) -> int:
 
 
 def update_job(session, job: Job, new_job: Job):
-    job.status = new_job.status
-    job.last_update = new_job.last_update
-    session.commit()
+    updated = False
+
+    if new_job.last_update > job.last_update:
+        job.status = new_job.status
+        job.last_update = new_job.last_update
+        updated = True
+        print(f"[{job.id}] Job Updated")
+    
+    for field in ['role', 'location', 'link']:
+        if not getattr(job, field) and getattr(new_job, field):
+            setattr(job, field, getattr(new_job, field))
+            updated = True
+            print(f"[{job.id}] Filled missing field: {field}")
+
+    if updated:
+        session.commit()
     return job.id
 
 
