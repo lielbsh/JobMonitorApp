@@ -22,7 +22,7 @@ class Email(Base):
     __tablename__ = "emails"
 
     id = Column(Integer, primary_key=True, index=True)
-    job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"))
+    job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=True)
     subject = Column(String)
     body = Column(Text)
     from_email = Column(String)
