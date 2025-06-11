@@ -43,3 +43,24 @@ APPLICATION_KEYWORDS = {
 }
 
 LABELS = list(APPLICATION_KEYWORDS.keys())
+
+EXTRACTION_PATTERNS = [
+    (r"application for (.+?) at ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "role_company"),
+    (r"for the ([A-Za-z0-9\- &_]+) role at ([A-Z][a-zA-Z0-9&.\-']+?)(?=[\s\.,]|$)", "role_company"),
+    (r"for the ([A-Za-z0-9\- &_]+) position at ([A-Z][a-zA-Z& .\-']+?)(?=[\s\.,]|$)", "role_company"),(r"has been received by ([A-Z][a-zA-Z& .\-']{2,}) for the ([A-Za-z0-9\- &_]+) (position|role)\b", "company_role")
+    (r"sent to ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
+    (r"thanks for applying to ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
+    (r"Thank you for applying to ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
+    (r"\b([A-Z][\w&.\-']{1,50})\s+(HR Team|Recruiting Team|HR)\b", "company"),
+    (r"\b([A-Z][\w&.\-']{1,50})'s\s+(Talent Team|HR Team|Recruiting Team)\b", "company"),
+    (r"for the role of ([A-Za-z0-9\- &_]{2,})", "role"),
+    (r"for the ([A-Za-z0-9&\-.,' ]+?) position", "role"),
+    (r"position of ([A-Za-z0-9\- &_]{2,})", "role"),
+    (r"application for ([A-Z][a-zA-Z0-9\- &]+)(?:\s*-\s*\d+)?", "role"),
+]
+
+ROLE_PATTERNS = [
+    r"\b(?:[Ss]enior|[Jj]unior)?\s*(?:[Dd]eveloper|[Dd]ata|[Ss]oftware|[Pp]roduct|[Mm]arketing|[Ss]ales|[Ee]ngineering|[Hh]R|[Oo]perations|[Ff]ull[- ]?[Ss]tack|[Ss]upport|[Ss]olution)\s+\w+(?:\s+\w+)?",
+    r"\b(?:Backend Engineer|Frontend Engineer|Site Reliability Engineer I|Technical Solution Engineer)\b"
+]
+

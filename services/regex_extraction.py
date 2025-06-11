@@ -1,5 +1,5 @@
 import re
-from config import APPLICATION_KEYWORDS
+from config import APPLICATION_KEYWORDS, EXTRACTION_PATTERNS, ROLE_PATTERNS
 from schemas import MessageData, JobData
 
 
@@ -41,33 +41,23 @@ def classify_message(subject: str, body: str):
     """
     msg_lower = f"{subject}\n{body}".lower()
     for label, patterns in APPLICATION_KEYWORDS.items():
-        for pattern in patterns:
-            if re.search(pattern, msg_lower):
-                return label
+        search_in_patterns(msg_lower ,patterns)
+        if search_in_patterns(msg_lower, patterns):
+            return label
     return None
 
+def search_in_patterns(text:str ,patterns:list[str]):
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            return match.group().strip()
+    return None
 
 def extract_company_and_role(sender, subject, body):
     text = f"Subject: {subject} \nBody: {body}"
     company, role = None, None
 
-    patterns = [
-        (r"application for (.+?) at ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "role_company"),
-        (r"for the ([A-Za-z0-9\- &_]+) role at ([A-Z][a-zA-Z0-9&.\-']+?)(?=[\s\.,]|$)", "role_company"),
-        (r"for the ([A-Za-z0-9\- &_]+) position at ([A-Z][a-zA-Z& .\-']+?)(?=[\s\.,]|$)", "role_company"),
-        (r"sent to ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
-        (r"thanks for applying to ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
-        (r"Thank you for applying to ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
-        (r"has been received by ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
-        (r"\b([A-Z][\w&.\-']{1,50})\s+(HR Team|Recruiting Team|HR)\b", "company"),
-        (r"\b([A-Z][\w&.\-']{1,50})'s\s+(Talent Team|HR Team|Recruiting Team)\b", "company"),
-        (r"for the role of ([A-Za-z0-9\- &_]{2,})", "role"),
-        (r"for the ([A-Za-z0-9&\-.,' ]+?) position", "role"),
-        (r"position of ([A-Za-z0-9\- &_]{2,})", "role"),
-        (r"application for ([A-Z][a-zA-Z0-9\- &]+)(?:\s*-\s*\d+)?", "role"),
-    ]
-
-    for pattern, kind in patterns:
+    for pattern, kind in EXTRACTION_PATTERNS:
         match = re.search(pattern, text, flags=re.IGNORECASE)
         if match:
             if kind == "role_company":
@@ -79,21 +69,8 @@ def extract_company_and_role(sender, subject, body):
                 role = match.group(1).strip()
             break
 
-    role_patterns = [
-        r"\b(?:[Ss]enior|[Jj]unior)?\s*(?:[Dd]eveloper|[Dd]ata|[Ss]oftware|[Pp]roduct|[Mm]arketing|[Ss]ales|[Ee]ngineering|[Hh]R|[Oo]perations|[Ff]ull[- ]?[Ss]tack|[Ss]upport|[Ss]olution)\s+\w+(?:\s+\w+)?",
-        r"\b(?:Backend Engineer|Frontend Engineer|Site Reliability Engineer I|Technical Solution Engineer)\b"
-    ]
-
-    def search_in_patterns(text:str ,patterns:list[str]):
-        for line in text.splitlines():
-            for pattern in patterns:
-                match = re.search(pattern, line)
-                if match:
-                    return match.group().strip()
-        return None
-
     if not role:
-        role = search_in_patterns(text, role_patterns)
+        role = search_in_patterns(text, ROLE_PATTERNS)
 
     return company, role
 
