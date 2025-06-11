@@ -39,7 +39,7 @@ def classify_message(subject: str, body: str):
     """
     Classifies the message (status) based on keyword presence in subject and body.
     """
-    msg_lower = f"{subject}\n{body}".lower()()
+    msg_lower = f"{subject}\n{body}".lower()
     for label, patterns in APPLICATION_KEYWORDS.items():
         for pattern in patterns:
             if re.search(pattern, msg_lower):

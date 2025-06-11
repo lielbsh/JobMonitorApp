@@ -21,16 +21,18 @@ def analyze_email(msg_data: MessageData) -> JobData | None:
     if result["status"] == "error":
         print(f"❌ OpenAI error: {result['message']}")
         return None
+    result_data = result["data"]
 
     return JobData(
         source="openai_api",
-        status=result["status"],
-        company=result["company"],
-        role=result["role"],
-        link=result["link"],
+        status=result_data["status"],
+        company=result_data["company"],
+        role=result_data["role"],
+        link=result_data["link"],
         location=None,
         last_update=last_update
     )
+
 
 def print_analysis(idx: int, analysis: JobData, msg_info: MessageData):
     print(f"\n[{idx}] 📧 EMAIL: {msg_info.subject} | from {msg_info.from_email}")
