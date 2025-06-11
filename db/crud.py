@@ -7,7 +7,7 @@ from schemas import JobData, MessageData
 def email_exist(gmail_id: str) -> (Email | None):
     with SessionLocal() as db:
         existing = db.query(Email).filter_by(gmail_id=gmail_id).first()
-        if existing: print(f"[{existing.id}] Email exist")
+        if existing: print(f"[{existing.id}] Email already exists in db")
         return existing
     
 
@@ -23,12 +23,12 @@ def insert_email(message_data: MessageData, job_id: int) -> bool:
         return True  
 
 
-def insert_job(session, job_data: JobData) -> int:
+def insert_job(session, job_data: JobData):
     new_job = job_data.to_job_model()
     session.add(new_job)
     session.commit()
     session.refresh(new_job)
-    print("New job saved to db, job Id =", new_job.id)
+    print(f"[{new_job.id}] New job saved to db")
     return new_job.id
 
 
