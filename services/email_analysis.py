@@ -2,10 +2,8 @@ from schemas import JobData, MessageData
 from services.openai_client import call_openaiapi, count_tokens, create_prompt
 from services.regex_extraction import extract_from_linkedin_confirmation, try_extract_with_rules
 
-def analyze_email(msg_data: MessageData) -> JobData:
+def analyze_email(msg_data: MessageData) -> JobData | None:
     is_linkedin = "linkedin.com" in msg_data.from_email.lower()
-    link = None
-    location = None
     last_update = msg_data.date
 
     if is_linkedin and "your application was sent to" in (msg_data.body or "").lower():
@@ -18,8 +16,11 @@ def analyze_email(msg_data: MessageData) -> JobData:
         return rule_result
 
     prompt = create_prompt(msg_data)
-    result = call_openaiapi(prompt) 
     print("Number of tokens: ",count_tokens(prompt))
+    result = call_openaiapi(prompt) 
+    if result["status"] == "error":
+        print(f"❌ OpenAI error: {result['message']}")
+        return None
 
     return JobData(
         source="openai_api",

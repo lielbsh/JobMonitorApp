@@ -21,8 +21,13 @@ def call_openaiapi(prompt: str) -> json:
     )
         result = response.choices[0].message.content
         try:
-            return json.loads(result)
+            parsed = json.loads(result)
+            return {
+                "status": "success",
+                "data": parsed
+            }
         except json.JSONDecodeError:
+            print("⚠️ Model response is not valid JSON.")
             return {
                 "status": "error",
                 "message": "Model response is not valid JSON.",
