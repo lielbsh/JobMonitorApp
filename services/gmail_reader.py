@@ -106,6 +106,7 @@ def get_messages_gmail(service, number_of_messages=8):
     results = service.users().messages().list(userId='me', q=query, maxResults=number_of_messages).execute() # ids
     messages = results.get('messages', []) # [{id, threadId},...]
     print(f"{len(messages)} emails found") 
+    messages.reverse()
 
     return messages
 
