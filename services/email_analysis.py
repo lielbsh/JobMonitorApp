@@ -2,7 +2,7 @@ from schemas import JobData, MessageData
 from services.openai_client import call_openaiapi, count_tokens, create_prompt
 from services.regex_extraction import extract_from_linkedin_confirmation, try_extract_with_rules
 
-def analyze_email(msg_data: MessageData) -> JobData | None:
+def get_job_data_from_email(msg_data: MessageData) -> JobData | None:
     is_linkedin = "linkedin.com" in msg_data.from_email.lower()
     last_update = msg_data.date
 
@@ -34,11 +34,11 @@ def analyze_email(msg_data: MessageData) -> JobData | None:
     )
 
 
-def print_analysis(idx: int, analysis: JobData, msg_info: MessageData):
+def print_job_details(idx: int, job_data: JobData, msg_info: MessageData):
     print(f"\n[{idx}] 📧 EMAIL: {msg_info.subject} | from {msg_info.from_email}")
-    print(f"Source   : {analysis.source}")
-    print(f"Status   : {analysis.status}")
-    print(f"Company  : {analysis.company}")
-    print(f"Role     : {analysis.role}")
-    print(f"Location : {analysis.location}")
-    print(f"Link     : {analysis.link}")
+    print(f"Source   : {job_data.source}")
+    print(f"Status   : {job_data.status}")
+    print(f"Company  : {job_data.company}")
+    print(f"Role     : {job_data.role}")
+    print(f"Location : {job_data.location}")
+    print(f"Link     : {job_data.link}")

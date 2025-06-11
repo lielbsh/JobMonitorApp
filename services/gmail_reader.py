@@ -13,7 +13,7 @@ from googleapiclient.discovery import build
 from datetime import datetime
 
 from db.crud import email_exist, insert_email, update_or_create_job
-from services.email_analysis import analyze_email, print_analysis
+from services.email_analysis import get_job_data_from_email, print_job_details
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
@@ -112,22 +112,25 @@ def get_messages_gmail(service, number_of_messages=8):
 
 def process_gmail_messages(messages, service):
     for idx, msg in enumerate(messages, start=1):
-        gmail_id, gmail_thread_id = msg['id'], msg['threadId']
+        gmail_id = msg['id']
+        if email_exist(gmail_id): 
+            continue
+        gmail_thread_id = msg['threadId']
+
         gmail_msg_data = service.users().messages().get(userId='me', id=gmail_id, format='full').execute()
-        if email_exist(gmail_id): continue
 
         message_data = extract_message_data(gmail_msg_data, gmail_id, gmail_thread_id)
         if message_data is None:
             print(f"Skipping email {gmail_id} – could not extract data.")
             continue
 
-        analysis = analyze_email(message_data)
-        if analysis is None:    
+        job_data = get_job_data_from_email(message_data)
+        if job_data is None:    
             print(f"[{idx}] Skipping message - analysis failed.")
             continue
-        print_analysis(idx, analysis, message_data)
+        print_job_details(idx, job_data, message_data)
 
-        if analysis.status == "Not Relevant":
+        if job_data.status == "Not Relevant":
             insert_email(
             message_data=message_data,
             job_id=None
@@ -135,7 +138,7 @@ def process_gmail_messages(messages, service):
             continue
 
         # Saves to db  
-        job_id = update_or_create_job(analysis, message_data)
+        job_id = update_or_create_job(job_data, message_data)
         if not job_id:
             continue
         
