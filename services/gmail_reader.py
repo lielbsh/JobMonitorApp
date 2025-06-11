@@ -35,15 +35,6 @@ def authenticate_gmail():
 
     return build('gmail', 'v1', credentials=creds)
 
-query = (
-    '("application was sent" OR "application for" OR applied OR applying OR '
-    '"application has been received" OR "thank you for applying" OR "received your CV" OR "submitting your resume" OR '
-    '"thanks for your interest" OR "following the interview" OR "update regarding your application" OR '
-    '"recruiting team" OR "job application") '
-    '-subject:(newsletter OR promotion OR "get started" OR reset OR verify) '
-    'newer_than:1m'
-)
-
 def extract_message_data(gmail_msg, gmail_id, gmail_thread_id) -> MessageData:
     """
     Extracts structured message information from Gmail API response.
@@ -103,8 +94,15 @@ def extract_message_data(gmail_msg, gmail_id, gmail_thread_id) -> MessageData:
         return None
 
 
-def get_messages_gmail(service):
-    number_of_messages = 15
+def get_messages_gmail(service, number_of_messages=8):
+    query = (
+    '("application was sent" OR "application for" OR applied OR applying OR '
+    '"application has been received" OR "thank you for applying" OR "received your CV" OR "submitting your resume" OR '
+    '"thanks for your interest" OR "following the interview" OR "update regarding your application" OR '
+    '"recruiting team" OR "job application") '
+    '-subject:(newsletter OR promotion OR "get started" OR reset OR verify) '
+    'newer_than:1m'
+    )
     results = service.users().messages().list(userId='me', q=query, maxResults=number_of_messages).execute() # ids
     messages = results.get('messages', []) # [{id, threadId},...]
     print(f"{len(messages)} emails found") 
@@ -127,6 +125,13 @@ def process_gmail_messages(messages, service):
             print(f"[{idx}] Skipping message - analysis failed.")
             continue
         print_analysis(idx, analysis, message_data)
+
+        if analysis.status == "Not Relevant":
+            insert_email(
+            message_data=message_data,
+            job_id=None
+            )
+            continue
 
         # Saves to db  
         job_id = update_or_create_job(analysis, message_data)
