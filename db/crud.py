@@ -81,7 +81,11 @@ def update_or_create_job(job_data: JobData, email_data: MessageData):
             if len(jobs) == 1:
                 db_job = jobs[0]
             else:
-                db_job = next((j for j in jobs if j.thread_id == thread_id), None)
+                db_job = (
+                    db.query(Job).join(Email)
+                    .filter(Email.thread_id == thread_id)
+                    .first()
+                )
         
         if db_job:
             return update_job(db, db_job, job_data)
