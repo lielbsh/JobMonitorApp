@@ -12,7 +12,7 @@ class Job(Base):
     status = Column(String)
     source = Column(String)
     created_at = Column(DateTime, server_default=func.now())
-    last_update = Column(DateTime)
+    last_update = Column(DateTime, server_default=func.now())
     location = Column(String)
     link = Column(String)
 

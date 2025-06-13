@@ -33,7 +33,8 @@ class JobData:
             role=self.role,
             link=self.link,
             location=self.location,
-            last_update=self.last_update,  
+            last_update=self.last_update,
+            created_at=self.created_at
         )
 
     @classmethod
@@ -44,6 +45,7 @@ class JobData:
             status=job.status,
             source=job.source or "email",
             last_update=job.last_update or datetime.now(),
+            created_at=job.created_at or datetime.now(),
             location=job.location,
             link=job.link,
             **kwargs
