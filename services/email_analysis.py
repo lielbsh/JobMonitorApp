@@ -1,5 +1,5 @@
 from schemas import JobData, MessageData
-from services.openai_client import call_openaiapi, count_tokens, create_prompt
+from services.openai_client import call_openaiapi, create_prompt
 from services.regex_extraction import extract_from_linkedin_confirmation, try_extract_with_rules
 
 def get_job_data_from_email(msg_data: MessageData) -> JobData | None:
@@ -16,7 +16,6 @@ def get_job_data_from_email(msg_data: MessageData) -> JobData | None:
         return rule_result
 
     prompt = create_prompt(msg_data)
-    print("Number of tokens: ",count_tokens(prompt))
     result = call_openaiapi(prompt) 
     if result["status"] == "error":
         print(f"❌ OpenAI error: {result['message']}")
@@ -34,8 +33,7 @@ def get_job_data_from_email(msg_data: MessageData) -> JobData | None:
     )
 
 
-def print_job_details(idx: int, job_data: JobData, msg_info: MessageData):
-    print(f"\n[{idx}] 📧 EMAIL: {msg_info.subject} | from {msg_info.from_email}")
+def print_job_details(job_data: JobData):
     print(f"Source   : {job_data.source}")
     print(f"Status   : {job_data.status}")
     print(f"Company  : {job_data.company}")

@@ -15,6 +15,9 @@ from datetime import datetime
 from db.crud import email_exist, insert_email, update_or_create_job
 from services.email_analysis import get_job_data_from_email, print_job_details
 
+import logging
+logger = logging.getLogger(__name__)
+
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 def authenticate_gmail():
@@ -67,7 +70,7 @@ def extract_message_data(gmail_msg, gmail_id, gmail_thread_id) -> MessageData:
         # Fallback: use snippet if body is empty
         if not body_html:
             snippet = gmail_msg.get('snippet', '') 
-            print("** Body is empty – using snippet instead **")
+            print("Body is empty – using snippet instead")
             body_text = snippet.strip()[:500] if snippet else ""
         else:
             # Clean HTML into readable plain text
@@ -90,22 +93,23 @@ def extract_message_data(gmail_msg, gmail_id, gmail_thread_id) -> MessageData:
             thread_id=gmail_thread_id
         )
     except Exception as e:
-        print(f"⚠️ Failed to extract message data for Gmail ID {gmail_id}: {e}")
+        logger.error(f"⚠️ Failed to extract message data for Gmail ID {gmail_id}: {e}")
         return None
 
 
-def get_messages_gmail(service, number_of_messages=8):
+def get_messages_gmail(service, number_of_messages=20):
     query = (
     '("application was sent" OR "application for" OR applied OR applying OR '
     '"application has been received" OR "thank you for applying" OR "received your CV" OR "submitting your resume" OR '
     '"thanks for your interest" OR "following the interview" OR "update regarding your application" OR '
     '"recruiting team" OR "job application") '
     '-subject:(newsletter OR promotion OR "get started" OR reset OR verify) '
-    'newer_than:1m'
+    'newer_than:14d'
+    'older_than:7d'
     )
     results = service.users().messages().list(userId='me', q=query, maxResults=number_of_messages).execute() # ids
     messages = results.get('messages', []) # [{id, threadId},...]
-    print(f"{len(messages)} emails found") 
+    logger.info(f"{len(messages)} emails found") 
     messages.reverse()
 
     return messages
@@ -121,14 +125,15 @@ def process_gmail_messages(messages, service):
 
         message_data = extract_message_data(gmail_msg_data, gmail_id, gmail_thread_id)
         if message_data is None:
-            print(f"Skipping email {gmail_id} – could not extract data.")
+            print(f"[{idx}] Skipping email {gmail_id} – could not extract data.")
             continue
+        print(f"\n[{idx}] 📧 EMAIL: {message_data.subject} | from {message_data.from_email}")
 
         job_data = get_job_data_from_email(message_data)
         if job_data is None:    
-            print(f"[{idx}] Skipping message - analysis failed.")
+            logger.warning(f"[{idx}] Skipping message - analysis failed.")
             continue
-        print_job_details(idx, job_data, message_data)
+        print_job_details(job_data)
 
         if job_data.status == "Not Relevant":
             insert_email(

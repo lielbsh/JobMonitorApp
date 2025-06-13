@@ -3,11 +3,14 @@ from db.database import SessionLocal
 from models import Job, Email
 from datetime import timedelta, datetime
 from schemas import JobData, MessageData
+import logging
+logger = logging.getLogger(__name__)
 
 def email_exist(gmail_id: str) -> (Email | None):
     with SessionLocal() as db:
         existing = db.query(Email).filter_by(gmail_id=gmail_id).first()
-        if existing: print(f"[{existing.id}] Email already exists in db")
+        if existing: 
+            logger.info(f"Email already exists in db, id={existing.id}, subject={existing.subject}")
         return existing
     
 
@@ -28,7 +31,7 @@ def insert_job(session, job_data: JobData):
     session.add(new_job)
     session.commit()
     session.refresh(new_job)
-    print(f"[{new_job.id}] New job saved to db")
+    logger.info(f"New job saved to db, id={new_job.id}")
     return new_job.id
 
 
@@ -39,13 +42,13 @@ def update_job(session, job: Job, new_job: Job):
         job.status = new_job.status
         job.last_update = new_job.last_update
         updated = True
-        print(f"[{job.id}] Job Updated")
+        logger.info(f"Job Updated, id={job.id}")
     
     for field in ['role', 'location', 'link']:
         if not getattr(job, field) and getattr(new_job, field):
             setattr(job, field, getattr(new_job, field))
             updated = True
-            print(f"[{job.id}] Filled missing field: {field}")
+            logger.info(f"Filled missing field: {field}, id={job.id}")
 
     if updated:
         session.commit()
@@ -60,7 +63,7 @@ def update_or_create_job(job_data: JobData, email_data: MessageData):
         from_email = email_data.from_email
 
         if not company:
-            print("Missing Company -> job didn't save to db")
+            logger.warning("Missing Company -> job didn't save to db")
             return
 
         if role:
@@ -91,4 +94,3 @@ def update_or_create_job(job_data: JobData, email_data: MessageData):
             return update_job(db, db_job, job_data)
         
         return insert_job(db, job_data)
-    

@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 import openai
@@ -5,11 +6,17 @@ import tiktoken
 from dotenv import load_dotenv
 from schemas import MessageData
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key=api_key)
 
+
 def call_openaiapi(prompt: str) -> json:
+    logger.info(f"Number of tokens: ,{count_tokens(prompt)}")
     try:
         response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -27,7 +34,7 @@ def call_openaiapi(prompt: str) -> json:
                 "data": parsed
             }
         except json.JSONDecodeError:
-            print("⚠️ Model response is not valid JSON.")
+            logger.error("⚠️ Model response is not valid JSON.")
             return {
                 "status": "error",
                 "message": "Model response is not valid JSON.",
@@ -35,14 +42,14 @@ def call_openaiapi(prompt: str) -> json:
             }
     
     except openai.AuthenticationError:
-        print("⚠️ Authentication failed: Please check your API key.")
+        logger.error("⚠️ Authentication failed: Please check your API key.")
         return {
             "status": "error",
             "message": "Authentication failed. Please check your API key."
         }
         
     except Exception as e:
-        print("⚠️ Unexpected error:", e)
+        logger.error("⚠️ Unexpected error:", e)
         return {
             "status": "error",
             "message": f"Unexpected error: {str(e)}"
