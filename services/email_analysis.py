@@ -3,6 +3,11 @@ from services.openai_client import call_openaiapi, create_prompt
 from services.regex_extraction import extract_from_linkedin_confirmation, try_extract_with_rules
 
 def get_job_data_from_email(msg_data: MessageData) -> JobData | None:
+    """
+    Extract job data from an email message.
+    If the email is from LinkedIn and contains a confirmation message, it will extract the job data. Otherwise, it will use OpenAI API to analyze the email content.
+    If the OpenAI API call fails, it will return None.
+    """
     is_linkedin = "linkedin.com" in msg_data.from_email.lower()
     last_update = msg_data.date
 
@@ -11,10 +16,6 @@ def get_job_data_from_email(msg_data: MessageData) -> JobData | None:
         if job:
             return job
     
-    rule_result = try_extract_with_rules(msg_data)
-    if rule_result:
-        return rule_result
-
     prompt = create_prompt(msg_data)
     result = call_openaiapi(prompt) 
     if result["status"] == "error":

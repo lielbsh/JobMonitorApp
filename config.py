@@ -1,4 +1,4 @@
-DATABASE_URL = "sqlite:///./test.db"
+DATABASE_URL = "sqlite:///./JobMonitorApp.db"
 
 APPLICATION_KEYWORDS = {
     "Submitted Application": [
