@@ -16,5 +16,5 @@ venv/
 # OS files
 .DS_Store
 
-jobs.db
+JobMonitorApp.db
 test.db

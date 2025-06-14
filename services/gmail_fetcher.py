@@ -97,14 +97,14 @@ def extract_message_data(gmail_msg, gmail_id, gmail_thread_id) -> MessageData:
         return None
 
 
-def get_messages_gmail(service, number_of_messages=20):
+def get_messages_gmail(service, number_of_messages=30):
     query = (
-    '("application was sent" OR "application for" OR applied OR applying OR '
-    '"application has been received" OR "thank you for applying" OR "received your CV" OR "submitting your resume" OR '
-    '"thanks for your interest" OR "following the interview" OR "update regarding your application" OR '
-    '"recruiting team" OR "job application") '
+    '("application was sent" OR "application for" OR applied OR applying OR "your application to" OR '
+    '"application has been received" OR "received your CV" OR "submitting your resume" OR '
+    '"thanks for your interest" OR "interview" OR "job application" OR '
+    '"recruiting team" OR "hr team" OR "Talent Acquisition Team") '
     '-subject:(newsletter OR promotion OR "get started" OR reset OR verify) '
-    'newer_than:14d'
+    'newer_than:21d'
     'older_than:7d'
     )
     results = service.users().messages().list(userId='me', q=query, maxResults=number_of_messages).execute() # ids
