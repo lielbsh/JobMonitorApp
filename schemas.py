@@ -34,7 +34,7 @@ class JobData:
             link=self.link,
             location=self.location,
             last_update=self.last_update,
-            created_at=self.created_at
+            created_at=self.last_update
         )
 
     @classmethod
