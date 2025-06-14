@@ -27,6 +27,8 @@ def insert_email(message_data: MessageData, job_id: int) -> bool:
 
 
 def insert_job(session, job_data: JobData):
+    if job_data.status == "Not Relevant" or not job_data.company:
+        return None
     new_job = job_data.to_job_model()
     session.add(new_job)
     session.commit()
@@ -45,8 +47,8 @@ def update_job(session, job: Job, new_job: Job):
         logger.info(f"Job Updated, id={job.id}")
     
     for field in ['role', 'location', 'link']:
-        if not getattr(job, field) and getattr(new_job, field):
-            setattr(job, field, getattr(new_job, field))
+        if (new_job_value := getattr(new_job, field, None)) and not getattr(job, field, None):
+            setattr(job, field, new_job_value)
             updated = True
             logger.info(f"Filled missing field: {field}, id={job.id}")
 
@@ -70,15 +72,17 @@ def update_or_create_job(job_data: JobData, email_data: MessageData):
             db_job = (
                 db.query(Job)
                 .filter(
-                    func.lower(Job.company) == company,
-                    func.lower(Job.role) == role,
+                    Job.company == company,
+                    Job.role == role,
                 )
+                .order_by(Job.created_at.desc())
                 .first()
             )
         else:
             jobs = (
                 db.query(Job)
-                .filter(func.lower(Job.company) == company)
+                .filter(Job.company == company)
+                .order_by(Job.created_at.desc())
                 .all()
             )
             if len(jobs) == 1:
@@ -86,7 +90,7 @@ def update_or_create_job(job_data: JobData, email_data: MessageData):
             else:
                 db_job = (
                     db.query(Job).join(Email)
-                    .filter(Email.thread_id == thread_id)
+                    .filter(Email.thread_id == thread_id or Email.from_email == from_email)
                     .first()
                 )
         
