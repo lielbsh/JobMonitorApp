@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from sqlalchemy import func, or_, and_
 from db.database import SessionLocal
 from db.models import Job, Email
 from datetime import timedelta, datetime
@@ -67,6 +67,9 @@ def update_or_create_job(job_data: JobData, email_data: MessageData):
         if not company:
             logger.warning("Missing Company -> job didn't save to db")
             return
+        
+        one_month_ago = datetime.now() - timedelta(days=30)
+        db_job = None
 
         if role:
             db_job = (
@@ -74,23 +77,46 @@ def update_or_create_job(job_data: JobData, email_data: MessageData):
                 .filter(
                     Job.company == company,
                     Job.role == role,
+                    Job.last_update >= one_month_ago,
                 )
                 .order_by(Job.created_at.desc())
                 .first()
             )
-        else:
+            if not db_job:
+                jobs = (
+                    db.query(Job)
+                    .filter(
+                        Job.company.startswith(company),
+                        Job.role.startswith(role),
+                        Job.last_update >= one_month_ago,
+                    )
+                    .order_by(Job.created_at.desc())
+                    .first()
+                )
+        if not db_job:
             jobs = (
                 db.query(Job)
-                .filter(Job.company == company)
+                .filter(
+                    Job.company.startswith(company),
+                    Job.last_update >= one_month_ago,
+                )
                 .order_by(Job.created_at.desc())
-                .all()
+                .limit(2).all()
             )
             if len(jobs) == 1:
                 db_job = jobs[0]
             else:
                 db_job = (
                     db.query(Job).join(Email)
-                    .filter(Email.thread_id == thread_id or Email.from_email == from_email)
+                    .filter(
+                        or_(
+                            Email.thread_id == thread_id,
+                            and_(
+                                Email.from_email == from_email,
+                                ~Email.from_email.ilike('%linkedin.com%')
+                            )
+                        )
+                    )
                     .first()
                 )
         

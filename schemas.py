@@ -8,18 +8,15 @@ from db.models import Job, Email
 class JobData:
     source: str
     status: str
-    company: str
+    company: Optional[str] = None
     role: Optional[str] = None
     link: Optional[str] = None
     location: Optional[str] = None
     last_update: datetime = field(default_factory=datetime.now)
-
     
     def __post_init__(self):
-        if not self.company or not self.company.strip():
-            raise ValueError("company is required")
-
-        self.company = self.company.strip().lower()
+        if self.company is not None:
+            self.company = self.company.strip().lower()
 
         if self.role:
             self.role = self.role.strip().lower()
