@@ -1,7 +1,5 @@
 import re
-from config import APPLICATION_KEYWORDS, EXTRACTION_PATTERNS, ROLE_PATTERNS
 from schemas import MessageData, JobData
-
 
 def extract_from_linkedin_confirmation(body: str, last_update) -> JobData | None:
     lines = body.strip().splitlines()

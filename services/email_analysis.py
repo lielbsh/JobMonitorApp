@@ -1,6 +1,6 @@
 from schemas import JobData, MessageData
 from services.openai_client import call_openaiapi, create_prompt
-from services.regex_extraction import extract_from_linkedin_confirmation, try_extract_with_rules
+from services.regex_extraction import extract_from_linkedin_confirmation
 
 def get_job_data_from_email(msg_data: MessageData) -> JobData | None:
     """

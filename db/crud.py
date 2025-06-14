@@ -1,6 +1,6 @@
 from sqlalchemy import func
 from db.database import SessionLocal
-from models import Job, Email
+from db.models import Job, Email
 from datetime import timedelta, datetime
 from schemas import JobData, MessageData
 import logging

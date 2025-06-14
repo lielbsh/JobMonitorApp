@@ -1,5 +1,5 @@
 from db.init_db import init_db
-from services.gmail_reader import authenticate_gmail, get_messages_gmail, process_gmail_messages
+from services.gmail_fetcher import authenticate_gmail, get_messages_gmail, process_gmail_messages
 import logging
 
 logging.basicConfig(

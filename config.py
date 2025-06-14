@@ -47,7 +47,8 @@ LABELS = list(APPLICATION_KEYWORDS.keys())
 EXTRACTION_PATTERNS = [
     (r"application for (.+?) at ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "role_company"),
     (r"for the ([A-Za-z0-9\- &_]+) role at ([A-Z][a-zA-Z0-9&.\-']+?)(?=[\s\.,]|$)", "role_company"),
-    (r"for the ([A-Za-z0-9\- &_]+) position at ([A-Z][a-zA-Z& .\-']+?)(?=[\s\.,]|$)", "role_company"),(r"has been received by ([A-Z][a-zA-Z& .\-']{2,}) for the ([A-Za-z0-9\- &_]+) (position|role)\b", "company_role")
+    (r"for the ([A-Za-z0-9\- &_]+) position at ([A-Z][a-zA-Z& .\-']+?)(?=[\s\.,]|$)", "role_company"),
+    (r"has been received by ([A-Z][a-zA-Z& .\-']{2,}) for the ([A-Za-z0-9\- &_]+) (?:position|role)\b", "company_role"),
     (r"sent to ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
     (r"thanks for applying to ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
     (r"Thank you for applying to ([A-Z][a-zA-Z& .\-']{2,})(?=[\s\.,]|$)", "company"),
