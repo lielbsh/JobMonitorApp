@@ -31,16 +31,7 @@ def authenticate_gmail():
 
     return build('gmail', 'v1', credentials=creds)
 
-def get_messages_gmail(service, number_of_messages=30):
-    query = (
-    '("application was sent" OR "application for" OR applied OR applying OR "your application to" OR '
-    '"application has been received" OR "received your CV" OR "submitting your resume" OR '
-    '"thanks for your interest" OR "interview" OR "job application" OR '
-    '"recruiting team" OR "hr team" OR "Talent Acquisition Team") '
-    '-subject:(newsletter OR promotion OR "get started" OR reset OR verify) '
-    'newer_than:21d'
-    'older_than:7d'
-    )
+def get_messages_gmail(service, number_of_messages=100, query=None):
     results = service.users().messages().list(userId='me', q=query, maxResults=number_of_messages).execute() # ids
     messages = results.get('messages', []) # [{id, threadId},...]
     logger.info(f"{len(messages)} emails found") 

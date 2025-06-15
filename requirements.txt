@@ -9,4 +9,5 @@ openai
 tiktoken
 python-dotenv
 SQLAlchemy
+schedule
 
