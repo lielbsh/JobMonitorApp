@@ -10,4 +10,6 @@ tiktoken
 python-dotenv
 SQLAlchemy
 schedule
+psycopg2-binary
+boto3
 
