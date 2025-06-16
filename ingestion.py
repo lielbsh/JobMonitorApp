@@ -10,24 +10,18 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s"
 )
 
-def run_ingestion_pipeline(mode: str, last_checked_ts: int):
+def run_ingestion_pipeline(query: str):
     init_db()
     gmail = authenticate_gmail()
+    messages = get_messages_gmail(service=gmail, query=query)
+    process_gmail_messages(messages, gmail)
+    logging.info("✅ Ingestion completed.")
 
-    if mode == "run":
-        logging.info("🔁 Running regular fetch: recent emails only.")
-        query = RUN_QUERY_TEMPLATE.format(timestamp=last_checked_ts)
-    else:
-        logging.info("Running in bootstrap mode, fetching all messages.")
-        query = BOOTSTRAP_QUERY
-
-        messages = get_messages_gmail(service=gmail, query=query)
-        process_gmail_messages(messages, gmail)
-
-        
+   
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', choices=['bootstrap', 'run'], default='bootstrap')
     args = parser.parse_args()
-    
-    run_ingestion_pipeline(mode=args.mode, last_checked_ts=None if args.mode == 'bootstrap' else int(time.time() - 60 * 60 * 24))
+
+    query = RUN_QUERY_TEMPLATE.format(last_checked_ts=int(time.time() - 60 * 60 * 24)) if args.mode == 'run' else BOOTSTRAP_QUERY
+    run_ingestion_pipeline(query=query)

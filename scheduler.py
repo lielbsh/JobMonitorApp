@@ -2,6 +2,7 @@ import os
 import schedule
 import time
 import logging
+from config import RUN_QUERY_TEMPLATE, BOOTSTRAP_QUERY
 from ingestion import run_ingestion_pipeline
 
 STATE_FILE = "last_checked.txt"
@@ -21,6 +22,7 @@ def update_last_checked_ts(curr_checked: int):
         f.write(str(curr_checked))
         logging.info(f" Updated last_checked_ts to {curr_checked}")
 
+
 def scheduled_job(event):
     mode = event.get("mode", "run")
     curr_check_time = int(time.time())
@@ -31,19 +33,19 @@ def scheduled_job(event):
     
     if mode == "bootstrap":
         logging.info("Running bootstrap fetch for all messages.")
-        run_ingestion_pipeline(mode="bootstrap", last_checked_ts=None)
+        run_ingestion_pipeline(query=BOOTSTRAP_QUERY)
         update_last_checked_ts(curr_check_time)
     else:
         last_checked = get_last_checked_ts()
         if last_checked is None:
             logging.warning("No previous timestamp found. Running bootstrap mode instead.")
-            run_ingestion_pipeline(mode="bootstrap", last_checked_ts=None)
+            run_ingestion_pipeline(query=BOOTSTRAP_QUERY)
             update_last_checked_ts(curr_check_time)
             return
         
         try:
             logger.info(f"🔔 Running scheduled fetch from {last_checked} to {curr_check_time}")
-            run_ingestion_pipeline(mode="run", last_checked_ts=last_checked)
+            run_ingestion_pipeline(query=RUN_QUERY_TEMPLATE.format(last_checked_ts=last_checked))
             update_last_checked_ts(curr_check_time)
         except Exception as e:
             logger.error(f"Error occurred: {e}")
