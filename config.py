@@ -18,7 +18,7 @@ BOOTSTRAP_QUERY = (
 )
 
 RUN_QUERY_TEMPLATE = (
-    'after:{last_checked_ts} '
+    'after:{timestamp} '
     '("application was sent" OR "application for" OR applied OR applying OR "your application to" OR '
     '"application has been received" OR "received your CV" OR "submitting your resume" OR '
     '"thanks for your interest" OR "interview" OR "job application" OR '
