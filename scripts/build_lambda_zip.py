@@ -8,7 +8,7 @@ LAMBDA_BUILD_DIR = Path("lambda_build")
 ZIP_FILENAME = "lambda_function.zip"
 
 # Files/folders to include
-INCLUDE_FILES = ["ingestion.py", "lambda_handler.py", "config.py", "settings.py"]
+INCLUDE_FILES = ["ingestion.py", "lambda_function.py", "config.py", "settings.py"]
 INCLUDE_DIRS = ["db", "services"]
 
 # Folders to exclude inside the zip
@@ -23,7 +23,7 @@ def clean_build_dir():
 
 def install_dependencies():
     subprocess.run([
-        "pip", "install", "-r", "requirements_prod.txt",
+        "pip", "install", "-r", "lambda_requirements.txt",
         "-t", str(LAMBDA_BUILD_DIR)
     ], check=True)
 
