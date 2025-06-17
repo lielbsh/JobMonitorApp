@@ -8,7 +8,7 @@ LAMBDA_BUILD_DIR = Path("lambda_build")
 ZIP_FILENAME = "lambda_function.zip"
 
 # Files/folders to include
-INCLUDE_FILES = ["ingestion.py", "lambda_function.py", "config.py", "settings.py"]
+INCLUDE_FILES = ["ingestion.py", "lambda_function.py", "config.py", "schemas.py", "settings.py"]
 INCLUDE_DIRS = ["db", "services"]
 
 # Folders to exclude inside the zip
