@@ -105,7 +105,7 @@ def update_or_create_job(job_data: JobData, email_data: MessageData):
             )
             if len(jobs) == 1:
                 db_job = jobs[0]
-            else:
+            elif len(jobs) > 1:
                 db_job = (
                     db.query(Job).join(Email)
                     .filter(
