@@ -3,10 +3,7 @@ google-auth-httplib2
 google-auth-oauthlib
 beautifulsoup4
 openai
-tiktoken
-python-dotenv
 SQLAlchemy
-schedule
 psycopg2-binary
 boto3
 
