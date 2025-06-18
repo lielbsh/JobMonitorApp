@@ -1,4 +1,3 @@
-import json
 import logging
 from db.init_db import init_db
 from db.crud import insert_email, update_or_create_job
@@ -12,7 +11,8 @@ def lambda_handler(event, context):
         init_db()
 
         job_data = event["job_data"]
-        job_data["last_update"] = parse_date(job_data["last_update"]).timestamp() 
+        logger.info(f"Received job data: {job_data}")
+        job_data["last_update"] = parse_date(job_data["last_update"])
 
         message_data = event["message_data"]
         message_data["date"] = parse_date(message_data["date"]).timestamp()
