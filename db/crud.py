@@ -1,8 +1,7 @@
-from sqlalchemy import func, or_, and_
+from sqlalchemy import or_, and_
 from db.database import SessionLocal
 from db.models import Job, Email
 from datetime import timedelta, datetime
-from schemas import JobData, MessageData
 import logging
 logger = logging.getLogger(__name__)
 
@@ -14,22 +13,22 @@ def email_exist(gmail_id: str) -> (Email | None):
         return existing
     
 
-def insert_email(message_data: MessageData, job_id: int) -> bool:
+def insert_email(message_data: dict, job_id: int) -> bool:
     with SessionLocal() as db:
-        existing = db.query(Email).filter_by(gmail_id=message_data.gmail_id).first()
+        existing = db.query(Email).filter_by(gmail_id=message_data.get("gmail_id")).first()
         if existing:
             return False
 
-        email = message_data.to_email_model(job_id)
+        email = Email(**message_data, job_id=job_id)
         db.add(email)
         db.commit()
         return True  
 
 
-def insert_job(session, job_data: JobData):
-    if job_data.status == "Not Relevant" or not job_data.company:
+def insert_job(session, job_data: dict) -> int | None:
+    if job_data.get("status") == "Not Relevant" or not job_data.get("company"):
         return None
-    new_job = job_data.to_job_model()
+    new_job = Job(**job_data)
     session.add(new_job)
     session.commit()
     session.refresh(new_job)
@@ -37,17 +36,17 @@ def insert_job(session, job_data: JobData):
     return new_job.id
 
 
-def update_job(session, job: Job, new_job: Job):
+def update_job(session, job: Job, new_job: dict) -> int:
     updated = False
 
-    if new_job.last_update > job.last_update:
-        job.status = new_job.status
-        job.last_update = new_job.last_update
+    if new_job.get("last_update") > job.last_update:
+        job.status = new_job.get("status")
+        job.last_update = new_job.get("last_update")
         updated = True
         logger.info(f"Job Updated, id={job.id}")
     
     for field in ['role', 'location', 'link']:
-        if (new_job_value := getattr(new_job, field, None)) and not getattr(job, field, None):
+        if (new_job_value := new_job.get(field)) and not getattr(job, field, None):
             setattr(job, field, new_job_value)
             updated = True
             logger.info(f"Filled missing field: {field}, id={job.id}")
@@ -57,12 +56,14 @@ def update_job(session, job: Job, new_job: Job):
     return job.id
 
 
-def update_or_create_job(job_data: JobData, email_data: MessageData):
+def update_or_create_job(job_data: dict, email_data: dict):
     with SessionLocal() as db:
-        company = job_data.company.lower() if job_data.company else None
-        role = job_data.role.lower() if job_data.role else None
-        thread_id = email_data.thread_id
-        from_email = email_data.from_email
+        company = job_data.get("company", None)
+        company = company.lower() if company else None
+        role = job_data.get("role", None)
+        role = role.lower() if role else None
+        thread_id = email_data.get("thread_id")
+        from_email = email_data.get("from_email")
 
         if not company:
             logger.warning("Missing Company -> job didn't save to db")
