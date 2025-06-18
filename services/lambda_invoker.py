@@ -1,0 +1,29 @@
+import boto3
+import json
+import os
+import logging
+
+logger = logging.getLogger(__name__)
+
+LAMBDA_DB_FUNCTION_NAME = os.environ.get("LAMBDA_DB_FUNCTION_NAME", "lambda_db")
+
+client = boto3.client("lambda")
+
+def invoke_lambda_db(job_data: dict, message_data: dict):
+    payload = {
+        "job_data": job_data,
+        "message_data": message_data
+    }
+
+    try:
+        response = client.invoke(
+            FunctionName=LAMBDA_DB_FUNCTION_NAME,
+            InvocationType="Event",  # async invocation 
+            Payload=json.dumps(payload).encode("utf-8")
+        )
+        return response
+    
+    except Exception as e:
+        logger.exception(f"❌ Failed to invoke lambda {LAMBDA_DB_FUNCTION_NAME}")
+        return None
+
