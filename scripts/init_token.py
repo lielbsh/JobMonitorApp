@@ -4,6 +4,11 @@ import logging
 import boto3
 from google_auth_oauthlib.flow import InstalledAppFlow
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
+
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 TOKEN_FILENAME = "token.pickle"
 STATE_BUCKET = os.environ.get("STATE_BUCKET")
@@ -14,6 +19,10 @@ s3 = boto3.client("s3")
 def authenticate_and_create_token():
     if not os.path.exists("credentials.json"):
         raise FileNotFoundError("credentials.json not found in the project root.")
+    
+    if os.path.exists(TOKEN_FILENAME):
+        logging.info("🔑 token.pickle already exists. Skipping authentication flow.")
+        return
 
     logging.info("🔐 Starting Gmail authentication flow...")
     flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
@@ -37,6 +46,7 @@ def upload_token_to_s3():
 
 
 def main():
+    """Script to authenticate Gmail and upload token to S3 initially."""
     authenticate_and_create_token()
     upload_token_to_s3()
 

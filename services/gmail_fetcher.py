@@ -1,6 +1,5 @@
 import os.path
 import pickle
-from schemas import JobData, MessageData
 from services.gmail_token_manager import load_credentials
 from services.message_extractor import extract_message_data
 from google.auth.transport.requests import Request
@@ -14,7 +13,7 @@ logger = logging.getLogger(__name__)
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 def authenticate_gmail():
-    if os.getenv("USE_S3_TOKEN") == "1":
+    if os.getenv("IS_PRODUCTION"):
         creds = load_credentials()
     else:
         creds = None
