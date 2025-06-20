@@ -16,5 +16,5 @@ def lambda_handler(event, context):
         logger.exception("❌ Error in lambda_handler")
         return {
             "statusCode": 500,
-            "body": json.dumps({"error": str(e)})
+            "body": json.dumps({"status": "error", "message": str(e)})
         }
