@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 client = boto3.client("lambda")
 
 def invoke_lambda_db(job_data: dict, message_data: dict):
+    serialize_datetime_fields(job_data, message_data)
     payload = {
         "job_data": job_data,
         "message_data": message_data
@@ -26,3 +27,7 @@ def invoke_lambda_db(job_data: dict, message_data: dict):
         logger.exception(f"❌ Failed to invoke lambda {LAMBDA_DB_FUNCTION_NAME}")
         raise
 
+
+def serialize_datetime_fields(job_data: dict, message_data: dict):
+    job_data["last_update"] = job_data["last_update"].isoformat()
+    message_data["date"] = message_data["date"].isoformat()
