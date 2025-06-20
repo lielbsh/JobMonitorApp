@@ -6,7 +6,6 @@ from db.crud import email_exist, insert_email, update_or_create_job
 from services.gmail_fetcher import authenticate_gmail, get_messages_gmail, process_gmail_message
 import logging
 import argparse
-from scripts.init_token import upload_token_to_s3
 from services.state_manager import S3StateManager
 from settings import STATE_BUCKET
 

@@ -1,4 +1,3 @@
-import json
 import time, logging
 from config import RUN_QUERY_TEMPLATE
 from settings import STATE_BUCKET

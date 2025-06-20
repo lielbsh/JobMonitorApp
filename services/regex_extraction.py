@@ -1,5 +1,5 @@
 import re
-from schemas import MessageData, JobData
+from schemas import JobData
 
 def extract_from_linkedin_confirmation(body: str, last_update) -> JobData | None:
     lines = body.strip().splitlines()
