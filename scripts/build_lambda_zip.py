@@ -32,14 +32,35 @@ def clean_build_dir():
     LAMBDA_BUILD_ROOT.mkdir()
 
 
-def install_dependencies(requirements_file: str, build_path: Path):
+def install_dependencies(requirements_file: str, build_path: Path, use_docker: bool = True):
     if not Path(requirements_file).exists():
         print(f"⚠️  Skipping dependency install: {requirements_file} not found")
         return
-    subprocess.run([
-        "pip", "install", "-r", requirements_file,
-        "-t", str(build_path)
-    ], check=True)
+
+    if use_docker:
+        print("🐳 Installing in Amazon Linux Docker container...")
+        # build_path_relative = str(build_path.relative_to(ROOT_DIR))  # אל תשתמשי בזה
+        build_path_in_container = "/var/task/" + str(build_path.relative_to(ROOT_DIR)).replace("\\", "/")
+        
+        subprocess.run([
+            "docker", "run", "--rm",
+            "-v", f"{ROOT_DIR}:/var/task",
+            "-w", "/var/task",
+            "amazonlinux:2",
+            "bash", "-c",
+            f"""
+            yum install -y python3 python3-pip zip &&
+            pip3 install --upgrade pip &&
+            pip3 install -r {requirements_file} -t {build_path_in_container}
+            """
+        ], check=True)
+    else:
+        subprocess.run([
+            "pip", "install", "-r", requirements_file,
+            "-t", str(build_path)
+        ], check=True)
+
+
 
 
 def copy_source_files(config: dict, build_path: Path):
