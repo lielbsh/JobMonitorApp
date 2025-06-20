@@ -1,7 +1,7 @@
 import json
-import os
 from services.gmail_fetcher import authenticate_gmail, get_messages_gmail, process_gmail_message
 from config import RUN_QUERY_TEMPLATE
+from settings import STATE_BUCKET
 import time, logging
 
 from services.lambda_invoker import invoke_lambda_db
@@ -9,7 +9,7 @@ from services.state_manager import S3StateManager
 
 logger = logging.getLogger(__name__)
 
-state = S3StateManager(bucket=os.environ["STATE_BUCKET"])
+state = S3StateManager(STATE_BUCKET)
 
 def run_analysis_lambda_handler(event):
     start = time.time()

@@ -1,5 +1,4 @@
 # ingestion.py
-import os
 import time
 from config import BOOTSTRAP_QUERY, RUN_QUERY_TEMPLATE
 from db.init_db import init_db
@@ -9,6 +8,7 @@ import logging
 import argparse
 from scripts.init_token import upload_token_to_s3
 from services.state_manager import S3StateManager
+from settings import STATE_BUCKET
 
 
 logging.basicConfig(
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         run_ingestion_pipeline_locally(query=query)
     else:
         try:
-            state = S3StateManager(bucket=os.environ["STATE_BUCKET"])
+            state = S3StateManager(STATE_BUCKET)
             curr_check_time = int(time.time())
             
             run_ingestion_pipeline_locally(query=BOOTSTRAP_QUERY)

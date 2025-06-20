@@ -1,11 +1,9 @@
 import boto3
 import json
-import os
 import logging
+from settings import LAMBDA_DB_FUNCTION_NAME
 
 logger = logging.getLogger(__name__)
-
-LAMBDA_DB_FUNCTION_NAME = os.environ.get("LAMBDA_DB_FUNCTION_NAME", "lambda_db")
 
 client = boto3.client("lambda")
 

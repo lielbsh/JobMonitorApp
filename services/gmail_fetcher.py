@@ -8,12 +8,14 @@ from googleapiclient.discovery import build
 from services.email_analysis import get_job_data_from_email, print_job_details
 
 import logging
+
+from settings import IS_PRODUCTION
 logger = logging.getLogger(__name__)
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 def authenticate_gmail():
-    if os.getenv("IS_PRODUCTION"):
+    if IS_PRODUCTION == "1":
         creds = load_credentials()
     else:
         creds = None

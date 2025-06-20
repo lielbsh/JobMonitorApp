@@ -4,15 +4,13 @@ import boto3
 import logging
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from settings import STATE_BUCKET as S3_BUCKET
 
 logger = logging.getLogger(__name__)
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
-
 TOKEN_LOCAL_PATH = "/tmp/token.pickle"
 S3_KEY = "token.pickle"
-S3_BUCKET = os.environ.get("STATE_BUCKET")
-
 s3 = boto3.client("s3")
 
 def upload_token_to_s3():

@@ -3,6 +3,7 @@ import pickle
 import logging
 import boto3
 from google_auth_oauthlib.flow import InstalledAppFlow
+from settings import STATE_BUCKET
 
 logging.basicConfig(
     level=logging.INFO,
@@ -11,7 +12,6 @@ logging.basicConfig(
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 TOKEN_FILENAME = "token.pickle"
-STATE_BUCKET = os.environ.get("STATE_BUCKET")
 S3_KEY = "token.pickle"
 
 s3 = boto3.client("s3")
