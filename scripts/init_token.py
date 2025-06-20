@@ -40,8 +40,8 @@ def upload_token_to_s3():
     try:
         s3.upload_file(TOKEN_FILENAME, STATE_BUCKET, S3_KEY)
         logging.info(f"☁️ token.pickle uploaded to S3 bucket '{STATE_BUCKET}'")
-    except Exception as e:
-        logging.error(f"❌ Failed to upload token to S3: {e}")
+    except Exception:
+        logging.exception(f"❌ Failed to upload token to S3")
         raise
 
 

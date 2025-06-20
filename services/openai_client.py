@@ -43,7 +43,7 @@ def call_openaiapi(prompt: str) -> json:
         }
         
     except Exception as e:
-        logger.error("⚠️ Unexpected error:", e)
+        logger.exception(f"⚠️ Unexpected error: {e}")
         return {
             "status": "error",
             "message": f"Unexpected error: {str(e)}"

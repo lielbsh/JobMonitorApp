@@ -66,7 +66,7 @@ if __name__ == '__main__':
             logging.info("✅ Bootstrap ingestion completed.")
 
             state.update_last_checked_ts(curr_check_time)
-            logging.info(f"✅ Updated last checked timestamp to {curr_check_time} in S3.")
+            logging.info(f"✅ Updated last checked timestamp in S3.")
             
         except Exception as e:
             logging.error(f"❌  Error during bootstrap ingestion: {e}")

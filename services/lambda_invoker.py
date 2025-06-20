@@ -19,9 +19,10 @@ def invoke_lambda_db(job_data: dict, message_data: dict):
             InvocationType="Event",  # async invocation 
             Payload=json.dumps(payload).encode("utf-8")
         )
+        logger.info(f"✅ Successfully invoked lambda {LAMBDA_DB_FUNCTION_NAME}")
         return response
     
-    except Exception as e:
+    except Exception:
         logger.exception(f"❌ Failed to invoke lambda {LAMBDA_DB_FUNCTION_NAME}")
-        return None
+        raise
 

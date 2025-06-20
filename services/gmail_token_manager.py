@@ -1,4 +1,3 @@
-import os
 import pickle
 import boto3
 import logging
@@ -14,18 +13,14 @@ S3_KEY = "token.pickle"
 s3 = boto3.client("s3")
 
 def upload_token_to_s3():
-    if not S3_BUCKET:
-        raise ValueError("STATE_BUCKET env variable not set")
     try:
         s3.upload_file(TOKEN_LOCAL_PATH, S3_BUCKET, S3_KEY)
         logger.info("✅ Uploaded token.pickle to S3")
     except Exception as e:
-        logger.error(f"❌ Failed to upload token to S3: {e}")
+        logger.exception(f"❌ Failed to upload token to S3: {e}")
         raise
 
 def download_token_from_s3():
-    if not S3_BUCKET:
-        raise ValueError("STATE_BUCKET env variable not set")
     try:
         s3.download_file(S3_BUCKET, S3_KEY, TOKEN_LOCAL_PATH)
         logger.info("📥 token.pickle downloaded from S3")

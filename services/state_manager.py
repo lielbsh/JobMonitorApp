@@ -47,10 +47,10 @@ class S3StateManager(StateManager):
             response = self.s3.get_object(Bucket=self.bucket, Key=self.key)
             return int(response["Body"].read().decode().strip())
         except self.s3.exceptions.NoSuchKey:
-            logger.info("No timestamp found in S3 – first run.")
+            logger.warning("No timestamp found in S3 – first run injection.py in bootstrap mode.")
             return None
         except Exception as e:
-            logger.error(f"Failed to get timestamp from S3: {e}")
+            logger.exception(f"Failed to get timestamp from S3: {e}")
             raise
 
     def update_last_checked_ts(self, ts: int):
@@ -58,5 +58,5 @@ class S3StateManager(StateManager):
             self.s3.put_object(Bucket=self.bucket, Key=self.key, Body=str(ts))
             logger.info(f"Updated timestamp in S3 to {ts}")
         except Exception as e:
-            logger.error(f"Failed to update timestamp in S3: {e}")
+            logger.exception(f"Failed to update timestamp in S3: {e}")
             raise
