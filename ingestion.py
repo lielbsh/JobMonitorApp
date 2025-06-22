@@ -26,7 +26,11 @@ def run_ingestion_pipeline_locally(query: str):
         if email_exist(gmail_id):
             continue
 
-        job_data, message_data = process_gmail_message(idx, message, service=gmail, gmail_id=gmail_id)
+        analysis = process_gmail_message(idx, message, service=gmail, gmail_id=gmail_id)
+        if analysis is None:
+            continue
+
+        job_data, message_data = analysis
 
         if job_data.get("status") == "Not Relevant":
             insert_email(
@@ -54,7 +58,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.mode == 'run':
-        query = RUN_QUERY_TEMPLATE.format(last_checked_ts=int(time.time()-60*60*24))
+        query = RUN_QUERY_TEMPLATE.format(timestamp=int(time.time()-60*60*24))
         run_ingestion_pipeline_locally(query=query)
     else:
         try:
