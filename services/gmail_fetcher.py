@@ -6,6 +6,7 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from services.email_analysis import get_job_data_from_email, print_job_details
+from typing import Tuple
 
 import logging
 
@@ -45,8 +46,6 @@ def get_messages_gmail(service, max_messages=80, query=None):
 
     return messages
 
-
-from typing import Optional, Tuple
 
 def process_gmail_message(idx, message, service, gmail_id) -> Tuple[dict, dict] | None:
     gmail_thread_id = message['threadId']
