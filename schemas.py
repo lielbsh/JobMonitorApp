@@ -1,8 +1,6 @@
-# schemas.py
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Optional
-from db.models import Job, Email 
 
 @dataclass
 class JobData:
@@ -21,32 +19,9 @@ class JobData:
         if self.role:
             self.role = self.role.strip().lower()
 
+    def to_dict(self):
+        return asdict(self)
 
-    def to_job_model(self) -> Job:
-        return Job(
-            source=self.source,
-            status=self.status,
-            company=self.company,
-            role=self.role,
-            link=self.link,
-            location=self.location,
-            last_update=self.last_update,
-            created_at=self.last_update
-        )
-
-    @classmethod
-    def from_job_model(cls, job: Job, **kwargs) -> 'JobData':
-        return cls(
-            company=job.company,
-            role=job.role,
-            status=job.status,
-            source=job.source or "email",
-            last_update=job.last_update or datetime.now(),
-            created_at=job.created_at or datetime.now(),
-            location=job.location,
-            link=job.link,
-            **kwargs
-        )
 
 @dataclass
 class MessageData:
@@ -56,14 +31,6 @@ class MessageData:
     body: Optional[str] = None
     gmail_id: Optional[str] = None
     thread_id: Optional[str] = None
-    
-    def to_email_model(self, job_id: int) -> Email:
-        return Email(
-            job_id=job_id,
-            subject=self.subject,
-            body=self.body,
-            from_email=self.from_email,
-            date=self.date,
-            gmail_id=self.gmail_id,
-            thread_id=self.thread_id
-        )
+
+    def to_dict(self):
+        return asdict(self)

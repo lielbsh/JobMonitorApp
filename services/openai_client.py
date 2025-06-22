@@ -1,22 +1,16 @@
 import logging
-import os
 import json
 import openai
-import tiktoken
-from dotenv import load_dotenv
 from schemas import MessageData
+from settings import OPENAI_API_KEY
 
 import logging
 logger = logging.getLogger(__name__)
 
-
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-client = openai.OpenAI(api_key=api_key)
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 
 def call_openaiapi(prompt: str) -> json:
-    logger.info(f"Number of tokens: ,{count_tokens(prompt)}")
     try:
         response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -49,16 +43,11 @@ def call_openaiapi(prompt: str) -> json:
         }
         
     except Exception as e:
-        logger.error("⚠️ Unexpected error:", e)
+        logger.exception(f"⚠️ Unexpected error: {e}")
         return {
             "status": "error",
             "message": f"Unexpected error: {str(e)}"
         }
-
-def count_tokens(text, model_name="gpt-4o-mini"):
-    encoding = tiktoken.encoding_for_model(model_name)
-    tokens = encoding.encode(text)
-    return len(tokens)
 
 
 def create_prompt(email_data: MessageData):
