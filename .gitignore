@@ -16,5 +16,11 @@ venv/
 # OS files
 .DS_Store
 
+# database files
 JobMonitorApp.db
 test.db
+last_checked.txt
+
+# Build
+lambda_build/
+*.zip

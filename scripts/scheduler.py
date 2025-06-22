@@ -4,7 +4,7 @@ import schedule
 import time
 import logging
 from config import RUN_QUERY_TEMPLATE, BOOTSTRAP_QUERY
-from ingestion import run_ingestion_pipeline
+from ingestion import run_ingestion_pipeline_locally
 from services.state_manager import LocalStateManager
 
 logger = logging.getLogger(__name__)
@@ -23,21 +23,21 @@ def scheduled_job(event):
 
     if mode == "bootstrap":
         logger.info("🚀 Running bootstrap fetch for all messages.")
-        run_ingestion_pipeline(query=BOOTSTRAP_QUERY)
+        run_ingestion_pipeline_locally(query=BOOTSTRAP_QUERY)
         state.update_last_checked_ts(curr_check_time)
 
     else:
         last_checked = state.get_last_checked_ts()
         if last_checked is None:
             logger.warning("No previous timestamp found. Running bootstrap mode instead.")
-            run_ingestion_pipeline(query=BOOTSTRAP_QUERY)
+            run_ingestion_pipeline_locally(query=BOOTSTRAP_QUERY)
             state.update_last_checked_ts(curr_check_time)
             return
 
         try:
             logger.info(f"🔁 Running scheduled fetch from {last_checked} to {curr_check_time}")
             query = RUN_QUERY_TEMPLATE.format(timestamp=last_checked)
-            run_ingestion_pipeline(query=query)
+            run_ingestion_pipeline_locally(query=query)
             state.update_last_checked_ts(curr_check_time)
         except Exception as e:
             logger.error(f"❌ Error occurred during run: {e}")
@@ -45,7 +45,6 @@ def scheduled_job(event):
 
 def run_scheduled_job_locally():
     scheduled_job({"mode": "run"})
-
 
 schedule.every(1).minutes.do(run_scheduled_job_locally)
 

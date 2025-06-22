@@ -1,18 +1,19 @@
 from schemas import JobData, MessageData
 from services.openai_client import call_openaiapi, create_prompt
-from services.regex_extraction import extract_from_linkedin_confirmation
+from services.regex_extraction import process_linkedin_message
+
 
 def get_job_data_from_email(msg_data: MessageData) -> JobData | None:
     """
     Extract job data from an email message.
-    If the email is from LinkedIn and contains a confirmation message, it will extract the job data. Otherwise, it will use OpenAI API to analyze the email content.
+    If the email is from LinkedIn and contains a confirmation/rejection message, it will extract the job data. Otherwise, it will use OpenAI API to analyze the email content.
     If the OpenAI API call fails, it will return None.
     """
     is_linkedin = "linkedin.com" in msg_data.from_email.lower()
     last_update = msg_data.date
 
-    if is_linkedin and "your application was sent to" in (msg_data.body or "").lower():
-        job = extract_from_linkedin_confirmation(msg_data.body, last_update)
+    if is_linkedin:
+        job = process_linkedin_message(msg_data.subject, msg_data.body, last_update)
         if job:
             return job
     
